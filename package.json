@@ -1,0 +1,29 @@
+{
+  "name": "automationexercise-cypress-tests",
+  "version": "1.0.0",
+  "description": "Projeto de testes automatizados para AutomationExercise - Material acadêmico",
+  "main": "index.js",
+  "scripts": {
+    "cypress:open": "cypress open",
+    "cypress:run": "cypress run",
+    "test:frontend": "cypress run --spec 'cypress/e2e/frontend/**/*.cy.js'",
+    "test:backend": "cypress run --spec 'cypress/e2e/backend/**/*.cy.js'",
+    "test:all": "cypress run",
+    "test:chrome": "cypress run --browser chrome",
+    "test:firefox": "cypress run --browser firefox",
+    "test:headed": "cypress run --headed"
+  },
+  "keywords": [
+    "cypress",
+    "automation",
+    "testing",
+    "e2e",
+    "api"
+  ],
+  "author": "Material Acadêmico",
+  "license": "MIT",
+  "devDependencies": {
+    "cypress": "^13.6.0"
+  }
+}
+

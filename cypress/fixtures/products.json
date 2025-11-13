@@ -1,0 +1,13 @@
+{
+  "searchTerms": {
+    "valid": "Blue Top",
+    "invalid": "ProdutoInexistente123",
+    "category": "Dress"
+  },
+  "productData": {
+    "name": "Blue Top",
+    "price": "Rs. 500",
+    "category": "Women > Tops"
+  }
+}
+

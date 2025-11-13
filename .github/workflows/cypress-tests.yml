@@ -1,0 +1,147 @@
+name: Cypress Tests
+
+# Configuração de quando a pipeline deve executar
+on:
+  # Executa quando há push na branch main ou master
+  push:
+    branches: [ main, master ]
+  
+  # Executa quando há pull request para main ou master
+  pull_request:
+    branches: [ main, master ]
+  
+  # Permite executar manualmente pela interface do GitHub
+  workflow_dispatch:
+
+# Define os jobs (tarefas) da pipeline
+jobs:
+  # Job para testes de frontend
+  frontend-tests:
+    name: Testes de Frontend (UI)
+    runs-on: ubuntu-latest
+    
+    strategy:
+      # Não cancela outros testes se um falhar
+      fail-fast: false
+      matrix:
+        # Executa em múltiplos navegadores
+        browser: [chrome, firefox, edge]
+    
+    steps:
+      # 1. Faz checkout do código
+      - name: Checkout do código
+        uses: actions/checkout@v4
+      
+      # 2. Configura Node.js
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      # 3. Instala dependências
+      - name: Instalar dependências
+        run: npm ci
+      
+      # 4. Executa os testes de frontend
+      - name: Executar testes de Frontend no ${{ matrix.browser }}
+        uses: cypress-io/github-action@v6
+        with:
+          browser: ${{ matrix.browser }}
+          spec: cypress/e2e/frontend/**/*.cy.js
+          config-file: cypress.config.js
+        env:
+          CYPRESS_baseUrl: https://automationexercise.com
+      
+      # 5. Upload dos vídeos em caso de falha
+      - name: Upload de vídeos (se houver falha)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-videos-frontend-${{ matrix.browser }}
+          path: cypress/videos
+          retention-days: 7
+      
+      # 6. Upload dos screenshots em caso de falha
+      - name: Upload de screenshots (se houver falha)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-screenshots-frontend-${{ matrix.browser }}
+          path: cypress/screenshots
+          retention-days: 7
+
+  # Job para testes de backend (API)
+  backend-tests:
+    name: Testes de Backend (API)
+    runs-on: ubuntu-latest
+    
+    steps:
+      # 1. Faz checkout do código
+      - name: Checkout do código
+        uses: actions/checkout@v4
+      
+      # 2. Configura Node.js
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      # 3. Instala dependências
+      - name: Instalar dependências
+        run: npm ci
+      
+      # 4. Executa os testes de API
+      - name: Executar testes de Backend (API)
+        run: npm run test:backend
+      
+      # 5. Upload dos resultados
+      - name: Upload de vídeos (se houver falha)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-videos-backend
+          path: cypress/videos
+          retention-days: 7
+
+  # Job para executar todos os testes
+  all-tests:
+    name: Todos os Testes
+    runs-on: ubuntu-latest
+    # Só executa se os testes anteriores passarem
+    needs: [frontend-tests, backend-tests]
+    
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+      
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Instalar dependências
+        run: npm ci
+      
+      - name: Executar todos os testes
+        run: npm run test:all
+      
+      # Upload dos artefatos finais
+      - name: Upload de vídeos finais
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-videos-all
+          path: cypress/videos
+          retention-days: 30
+      
+      - name: Upload de screenshots finais
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-screenshots-all
+          path: cypress/screenshots
+          retention-days: 30
+
